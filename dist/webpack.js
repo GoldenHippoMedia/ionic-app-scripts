@@ -168,6 +168,7 @@ function handleWebpackBuildSuccess(resolve, reject, stats, promise, pendingPromi
     // check if the promise if the last promise in the list of pending promises
     if (pendingPromises.length > 0 && pendingPromises[pendingPromises.length - 1] === promise) {
         logger_1.Logger.debug('handleWebpackBuildSuccess: Resolving with Webpack data');
+        console.log(stats.toString({ colors: true }));
         resolve(stats);
         return;
     }

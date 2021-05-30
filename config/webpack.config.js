@@ -79,6 +79,10 @@ var devConfig = {
     }
   },
 
+  externals: {
+    systemjs: 'System'
+  },
+
   module: {
     rules: [
       {
