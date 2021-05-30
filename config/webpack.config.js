@@ -7,19 +7,16 @@
  * https://webpack.js.org/configuration/
  */
 
-var path = require('path');
-var webpack = require('webpack');
-var ionicWebpackFactory = require(process.env.IONIC_WEBPACK_FACTORY);
+const path = require('path');
+
+const ionicWebpackFactory = require(process.env.IONIC_WEBPACK_FACTORY);
 const Dotenv = require('dotenv-webpack');
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 
-var ModuleConcatPlugin = require('webpack/lib/optimize/ModuleConcatenationPlugin');
-var PurifyPlugin = require('@angular-devkit/build-optimizer').PurifyPlugin;
+const { ProvidePlugin } = require('webpack');
+const { PurifyPlugin } = require('@angular-devkit/build-optimizer');
 
-var optimizedProdLoaders = [
-  {
-    test: /\.json$/,
-    loader: 'json-loader'
-  },
+const optimizedProdLoaders = [
   {
     test: /\.js$/,
     loader: [
@@ -64,6 +61,7 @@ function getProdLoaders() {
 }
 
 var devConfig = {
+  mode: 'development',
   entry: process.env.IONIC_APP_ENTRY_POINT,
   output: {
     path: '{{BUILD}}',
@@ -75,18 +73,27 @@ var devConfig = {
 
   resolve: {
     extensions: ['.ts', '.js', '.json'],
-    modules: [path.resolve('node_modules')]
+    modules: [path.resolve('node_modules')],
+    fallback: {
+      stream: false
+    }
   },
 
   module: {
-    loaders: [
-      {
-        test: /\.json$/,
-        loader: 'json-loader'
-      },
+    rules: [
       {
         test: /\.ts$/,
         loader: process.env.IONIC_WEBPACK_LOADER
+      },
+      {
+        test: require.resolve('systemjs'),
+        loader: 'expose-loader',
+        options: {
+          exposes: {
+            globalName: 'System',
+            override: true
+          }
+        }
       }
     ]
   },
@@ -97,20 +104,33 @@ var devConfig = {
       systemvars: true, // load all the predefined 'process.env' variables which will trump anything local per dotenv specs.
       silent: true // hide any errors
     }),
-    ionicWebpackFactory.getIonicEnvironmentPlugin(),
-    ionicWebpackFactory.getCommonChunksPlugin()
+    new NodePolyfillPlugin(),
+    new ProvidePlugin({
+      System: 'systemjs'
+    }),
+    ionicWebpackFactory.getIonicEnvironmentPlugin()
   ],
 
-  // Some libraries import Node modules but don't use them in the browser.
-  // Tell Webpack to provide empty mocks for them so importing them works.
-  node: {
-    fs: 'empty',
-    net: 'empty',
-    tls: 'empty'
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          name: 'vendor',
+          test: /[\\/]node_modules[\\/]/,
+          chunks: 'all'
+        },
+        // pages: {
+        //   name: file => file.split('/').reduceRight(name => name),
+        //   test: /[\\/]src[\\/]pages[\\/]/,
+        //   chunks: 'all'
+        // }
+      }
+    }
   }
 };
 
 var prodConfig = {
+  mode: 'production',
   entry: process.env.IONIC_APP_ENTRY_POINT,
   output: {
     path: '{{BUILD}}',
@@ -122,11 +142,14 @@ var prodConfig = {
 
   resolve: {
     extensions: ['.ts', '.js', '.json'],
-    modules: [path.resolve('node_modules')]
+    modules: [path.resolve('node_modules')],
+    fallback: {
+      stream: false
+    }
   },
 
   module: {
-    loaders: getProdLoaders()
+    rules: getProdLoaders()
   },
 
   plugins: [
@@ -135,18 +158,21 @@ var prodConfig = {
       systemvars: true, // load all the predefined 'process.env' variables which will trump anything local per dotenv specs.
       silent: true // hide any errors
     }),
+    new NodePolyfillPlugin(),
     ionicWebpackFactory.getIonicEnvironmentPlugin(),
-    ionicWebpackFactory.getCommonChunksPlugin(),
-    new ModuleConcatPlugin(),
     new PurifyPlugin()
   ],
 
-  // Some libraries import Node modules but don't use them in the browser.
-  // Tell Webpack to provide empty mocks for them so importing them works.
-  node: {
-    fs: 'empty',
-    net: 'empty',
-    tls: 'empty'
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          name: 'vendor',
+          test: /[\\/]node_modules[\\/]/,
+          chunks: 'all'
+        }
+      }
+    }
   }
 };
 
@@ -155,4 +181,3 @@ module.exports = {
   dev: devConfig,
   prod: prodConfig
 }
-
