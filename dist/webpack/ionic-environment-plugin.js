@@ -14,7 +14,7 @@ var IonicEnvironmentPlugin = (function () {
     }
     IonicEnvironmentPlugin.prototype.apply = function (compiler) {
         var _this = this;
-        var name = 'Ionic Environment Plugin';
+        var name = 'IonicEnvironmentPlugin';
         compiler.hooks.contextModuleFactory.tap(name, function (contextModuleFactory) {
             contextModuleFactory.hooks.afterResolve.tapAsync(name, function (result, callback) {
                 if (!result) {
@@ -30,7 +30,7 @@ var IonicEnvironmentPlugin = (function () {
                 result.resource = _this.context.srcDir;
                 result.recursive = true;
                 result.dependencies.forEach(function (dependency) { return dependency.critical = false; });
-                result.resolveDependencies = function (p1, p2, p3, p4, cb) {
+                result.resolveDependencies = function (_p1, _p2, cb) {
                     var dependencies = Object.keys(webpackDeepLinkModuleDictionary)
                         .map(function (key) {
                         var value = webpackDeepLinkModuleDictionary[key];

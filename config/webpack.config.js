@@ -13,13 +13,12 @@ const ionicWebpackFactory = require(process.env.IONIC_WEBPACK_FACTORY);
 const Dotenv = require('dotenv-webpack');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 
-const { ProvidePlugin } = require('webpack');
 const { PurifyPlugin } = require('@angular-devkit/build-optimizer');
 
 const optimizedProdLoaders = [
   {
     test: /\.js$/,
-    loader: [
+    use: [
       {
         loader: process.env.IONIC_CACHE_LOADER
       },
@@ -34,7 +33,7 @@ const optimizedProdLoaders = [
   },
   {
     test: /\.ts$/,
-    loader: [
+    use: [
       {
         loader: process.env.IONIC_CACHE_LOADER
       },
@@ -68,7 +67,9 @@ var devConfig = {
     publicPath: 'build/',
     filename: '[name].js',
     devtoolModuleFilenameTemplate: ionicWebpackFactory.getSourceMapperFunction(),
+    chunkFilename: '[name].js'
   },
+  target: 'web',
   devtool: process.env.IONIC_SOURCE_MAP_TYPE,
 
   resolve: {
@@ -79,25 +80,11 @@ var devConfig = {
     }
   },
 
-  externals: {
-    systemjs: 'System'
-  },
-
   module: {
     rules: [
       {
         test: /\.ts$/,
         loader: process.env.IONIC_WEBPACK_LOADER
-      },
-      {
-        test: require.resolve('systemjs'),
-        loader: 'expose-loader',
-        options: {
-          exposes: {
-            globalName: 'System',
-            override: true
-          }
-        }
       }
     ]
   },
@@ -109,9 +96,6 @@ var devConfig = {
       silent: true // hide any errors
     }),
     new NodePolyfillPlugin(),
-    new ProvidePlugin({
-      System: 'systemjs'
-    }),
     ionicWebpackFactory.getIonicEnvironmentPlugin()
   ],
 
@@ -121,13 +105,10 @@ var devConfig = {
         vendor: {
           name: 'vendor',
           test: /[\\/]node_modules[\\/]/,
-          chunks: 'all'
         },
-        // pages: {
-        //   name: file => file.split('/').reduceRight(name => name),
-        //   test: /[\\/]src[\\/]pages[\\/]/,
-        //   chunks: 'all'
-        // }
+        pages: {
+          test: /[\\/]src[\\/]pages[\\/]/,
+        }
       }
     }
   }
