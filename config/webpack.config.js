@@ -67,7 +67,6 @@ var devConfig = {
     publicPath: 'build/',
     filename: '[name].js',
     devtoolModuleFilenameTemplate: ionicWebpackFactory.getSourceMapperFunction(),
-    chunkFilename: '[name].js'
   },
   target: 'web',
   devtool: process.env.IONIC_SOURCE_MAP_TYPE,
@@ -77,6 +76,13 @@ var devConfig = {
     modules: [path.resolve('node_modules')],
     fallback: {
       stream: false
+    }
+  },
+
+  snapshot: {
+    module: {
+      timestamp: false,
+      hash: true
     }
   },
 

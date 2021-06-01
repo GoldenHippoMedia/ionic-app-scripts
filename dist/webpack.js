@@ -13,6 +13,7 @@ var interfaces_1 = require("./util/interfaces");
 var eventEmitter = new events_1.EventEmitter();
 var INCREMENTAL_BUILD_FAILED = 'incremental_build_failed';
 var INCREMENTAL_BUILD_SUCCESS = 'incremental_build_success';
+let comp;
 /*
  * Due to how webpack watch works, sometimes we start an update event
  * but it doesn't affect the bundle at all, for example adding a new typescript file
@@ -130,6 +131,7 @@ function runWebpackFullBuild(config) {
             }
         };
         var compiler = webpackApi(config);
+        comp = compiler;
         compiler.run(callback);
     });
 }
@@ -149,6 +151,16 @@ function runWebpackIncrementalBuild(initializeWatch, context, config) {
         });
         if (initializeWatch) {
             startWebpackWatch(context, config);
+        } else {
+
+          comp.run((err, stats) => {
+            if (err) {
+              eventEmitter.emit(INCREMENTAL_BUILD_FAILED, err);
+            }
+            else {
+              eventEmitter.emit(INCREMENTAL_BUILD_SUCCESS, stats);
+            }
+          });
         }
     });
     pendingPromises.push(promise);
@@ -179,8 +191,10 @@ function handleWebpackBuildSuccess(resolve, reject, stats, promise, pendingPromi
 function startWebpackWatch(context, config) {
     logger_1.Logger.debug('Starting Webpack watch');
     var compiler = webpackApi(config);
-    context.webpackWatch = compiler.watch({}, function (err, stats) {
+    comp = compiler;
+    context.webpackWatch = compiler.run(function (err, stats) {
         if (err) {
+            console.log(err);
             eventEmitter.emit(INCREMENTAL_BUILD_FAILED, err);
         }
         else {
