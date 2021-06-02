@@ -55,6 +55,19 @@ var lab_1 = require("./lab");
 function createHttpServer(config) {
     var app = express();
     app.set('serveConfig', config);
+    app.use((req, res, next) => {
+      const { originalUrl } = req;
+
+      if(originalUrl.includes('.js.map')) {
+        if(originalUrl.includes('vendor.js.map')) {
+          return res.sendStatus(204);
+        }
+
+        return res.sendFile(config.rootDir + '/.sourcemaps' + originalUrl.replace('/build', ''))
+      }
+
+      next();
+    });
     app.get('/', serveIndex);
     app.use('/', express.static(config.wwwDir));
     app.use("/" + serve_config_1.LOGGER_DIR, express.static(path.join(__dirname, '..', '..', 'bin'), { maxAge: 31536000 }));
