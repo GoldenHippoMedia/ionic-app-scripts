@@ -56,7 +56,7 @@ var HybridFileSystem = (function () {
     HybridFileSystem.prototype.readFile = function (path, callback) {
         var file = this.fileCache.get(path);
         if (file) {
-            callback(null, new Buffer(file.content));
+            callback(null, Buffer.from(file.content));
             return;
         }
         return this.inputFileSystem.readFile(path, callback);

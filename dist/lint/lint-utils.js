@@ -85,8 +85,7 @@ function removeDuplicateFileNames(fileNames) {
 }
 exports.removeDuplicateFileNames = removeDuplicateFileNames;
 function isMpegFile(file) {
-    var buffer = new Buffer(256);
-    buffer.fill(0);
+    var buffer = Buffer.alloc(256, 0);
     var fd = fs.openSync(file, 'r');
     try {
         fs.readSync(fd, buffer, 0, 256, null);
