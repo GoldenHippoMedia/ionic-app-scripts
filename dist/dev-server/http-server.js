@@ -57,6 +57,14 @@ function createHttpServer(config) {
     app.set('serveConfig', config);
     app.get('/', serveIndex);
     app.use('/', express.static(config.wwwDir));
+    // to account for chunks with appended hashes
+    app.use((req, _res, next) => {
+      const { originalUrl } = req;
+      if(originalUrl.startsWith('/build') && originalUrl.includes('.js.map?')) {
+        req.originalUrl = originalUrl.split('?')[0];
+      }
+      next();
+    });
     app.use('/build', express.static(config.rootDir + '/.sourcemaps'));
     app.use("/" + serve_config_1.LOGGER_DIR, express.static(path.join(__dirname, '..', '..', 'bin'), { maxAge: 31536000 }));
     // Lab routes
