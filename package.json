@@ -37,7 +37,7 @@
     "chokidar": "^3.5.1",
     "clean-css": "^4.1.11",
     "cross-spawn": "^5.1.0",
-    "dotenv-webpack": "^7.0.2",
+    "dotenv-webpack": "^7.0.3",
     "expose-loader": "^3.0.0",
     "express": "^4.16.3",
     "fs-extra": "^4.0.2",
@@ -57,7 +57,7 @@
     "tiny-lr": "^1.1.1",
     "tslint": "^5.8.0",
     "tslint-eslint-rules": "^4.1.1",
-    "uglify-es": "3.2.2",
+    "uglify-es": "3.3.9",
     "webpack": "5.38.1",
     "ws": "3.3.2",
     "xml2js": "^0.4.19"

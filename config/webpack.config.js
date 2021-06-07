@@ -59,8 +59,9 @@ function getProdLoaders() {
   return devConfig.module.loaders;
 }
 
-var devConfig = {
-  mode: 'development',
+const common = {
+  target: 'web',
+  devtool: process.env.IONIC_SOURCE_MAP_TYPE,
   entry: process.env.IONIC_APP_ENTRY_POINT,
   output: {
     path: '{{BUILD}}',
@@ -68,8 +69,22 @@ var devConfig = {
     filename: '[name].js',
     devtoolModuleFilenameTemplate: ionicWebpackFactory.getSourceMapperFunction(),
   },
-  target: 'web',
-  devtool: process.env.IONIC_SOURCE_MAP_TYPE,
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          name: 'vendor',
+          test: /[\\/]node_modules[\\/]/,
+          chunks: 'all'
+        }
+      }
+    }
+  }
+};
+
+const devConfig = {
+  ...common,
+  mode: 'development',
 
   resolve: {
     extensions: ['.ts', '.js', '.json'],
@@ -79,6 +94,7 @@ var devConfig = {
     }
   },
 
+  // keeps Webpack's cache from reflecting stale files
   snapshot: {
     module: {
       timestamp: false,
@@ -103,34 +119,13 @@ var devConfig = {
     }),
     new NodePolyfillPlugin(),
     ionicWebpackFactory.getIonicEnvironmentPlugin()
-  ],
-
-  optimization: {
-    splitChunks: {
-      cacheGroups: {
-        vendor: {
-          name: 'vendor',
-          test: /[\\/]node_modules[\\/]/,
-        },
-        pages: {
-          test: /[\\/]src[\\/]pages[\\/]/,
-        }
-      }
-    }
-  }
+  ]
 };
 
-var prodConfig = {
+const prodConfig = {
+  ...common,
   mode: 'production',
-  entry: process.env.IONIC_APP_ENTRY_POINT,
-  output: {
-    path: '{{BUILD}}',
-    publicPath: 'build/',
-    filename: '[name].js',
-    devtoolModuleFilenameTemplate: ionicWebpackFactory.getSourceMapperFunction(),
-  },
-  devtool: process.env.IONIC_SOURCE_MAP_TYPE,
-
+  
   resolve: {
     extensions: ['.ts', '.js', '.json'],
     modules: [path.resolve('node_modules')],
@@ -152,19 +147,7 @@ var prodConfig = {
     new NodePolyfillPlugin(),
     ionicWebpackFactory.getIonicEnvironmentPlugin(),
     new PurifyPlugin()
-  ],
-
-  optimization: {
-    splitChunks: {
-      cacheGroups: {
-        vendor: {
-          name: 'vendor',
-          test: /[\\/]node_modules[\\/]/,
-          chunks: 'all'
-        }
-      }
-    }
-  }
+  ]
 };
 
 
