@@ -78,20 +78,16 @@ const common = {
         }
       }
     }
+  },
+  resolve: {
+    extensions: ['.ts', '.js', '.json'],
+    modules: [path.resolve('node_modules')]
   }
 };
 
 const devConfig = {
   ...common,
   mode: 'development',
-
-  resolve: {
-    extensions: ['.ts', '.js', '.json'],
-    modules: [path.resolve('node_modules')],
-    fallback: {
-      stream: false
-    }
-  },
 
   // keeps Webpack's cache from reflecting stale files
   snapshot: {
@@ -124,14 +120,6 @@ const devConfig = {
 const prodConfig = {
   ...common,
   mode: 'production',
-  
-  resolve: {
-    extensions: ['.ts', '.js', '.json'],
-    modules: [path.resolve('node_modules')],
-    fallback: {
-      stream: false
-    }
-  },
 
   module: {
     rules: getProdLoaders()
