@@ -119,6 +119,7 @@ function runWebpackFullBuild(config) {
       else {
         var info = stats.toJson();
         if (stats.hasErrors()) {
+          console.error(info.errors);
           reject(new errors_1.BuildError(info.errors));
         }
         else if (stats.hasWarnings()) {

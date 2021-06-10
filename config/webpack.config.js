@@ -81,7 +81,10 @@ const common = {
   },
   resolve: {
     extensions: ['.ts', '.js', '.json'],
-    modules: [path.resolve('node_modules')]
+    modules: [path.resolve('node_modules')],
+    fallback: {
+      stream: false
+    }
   }
 };
 
