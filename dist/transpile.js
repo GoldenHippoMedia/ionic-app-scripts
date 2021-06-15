@@ -143,6 +143,10 @@ function transpileWorker(context, workerConfig) {
         resetSourceFiles(context.fileCache);
         var beforeArray = [];
         program.emit(undefined, function (path, data, writeByteOrderMark, onError, sourceFiles) {
+          // enables bundlers to statically analyze the routes before compilation
+          if(path.endsWith('app.module.js')) {
+            data = data.replace(/loadChildren: '([\w\._\/-]+)#([\w_-]+)', name: '([\w_-]+)'/g, (_, path, exportedModule, name) => `loadChildren: () => import('${path}').then(mod => mod.${exportedModule}), name: '${name}'`);
+          }
             if (workerConfig.writeInMemory) {
                 writeTranspiledFilesCallback(context.fileCache, path, data, workerConfig.inlineTemplate);
             }

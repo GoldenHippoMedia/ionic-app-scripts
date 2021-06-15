@@ -1,14 +1,14 @@
 "use strict";
+const esbuild = require('esbuild');
+const fs = require('fs');
 Object.defineProperty(exports, "__esModule", { value: true });
 var events_1 = require("events");
 var path_1 = require("path");
 var webpackApi = require("webpack");
 var logger_1 = require("./logger/logger");
 var config_1 = require("./util/config");
-var Constants = require("./util/constants");
 var errors_1 = require("./util/errors");
 var events_2 = require("./util/events");
-var helpers_1 = require("./util/helpers");
 var interfaces_1 = require("./util/interfaces");
 var eventEmitter = new events_1.EventEmitter();
 var INCREMENTAL_BUILD_FAILED = 'incremental_build_failed';
@@ -68,7 +68,7 @@ function webpackWorker(context, configFile) {
     promise = runWebpackIncrementalBuild(!context.webpackWatch, context, webpackConfig);
   }
   else {
-    promise = runWebpackFullBuild(webpackConfig);
+    promise = runWebpackFullBuild(context, webpackConfig);
   }
   return promise
     .then(function (stats) {
@@ -76,31 +76,29 @@ function webpackWorker(context, configFile) {
     });
 }
 exports.webpackWorker = webpackWorker;
-function webpackBuildComplete(stats, context, webpackConfig) {
-  if (helpers_1.getBooleanPropertyValue(Constants.ENV_PRINT_WEBPACK_DEPENDENCY_TREE)) {
-    logger_1.Logger.debug('Webpack Dependency Map Start');
-    var dependencyMap = helpers_1.webpackStatsToDependencyMap(context, stats);
-    helpers_1.printDependencyMap(dependencyMap);
-    logger_1.Logger.debug('Webpack Dependency Map End');
-  }
-  // set the module files used in this bundle
-  // this reference can be used elsewhere in the build (sass)
-  var files = [];
-  stats.compilation.modules.forEach(function (webpackModule) {
-    if (webpackModule.resource) {
-      files.push(webpackModule.resource);
-    }
-    else if (webpackModule.context) {
-      files.push(webpackModule.context);
-    }
-    else if (webpackModule.fileDependencies) {
-      webpackModule.fileDependencies.forEach(function (filePath) {
-        files.push(filePath);
+function webpackBuildComplete(stats, context, _webpackConfig) {
+  const trimmedFiles = Object.values(stats)
+    .reduce((acc, file) => {
+      Object.keys(file.inputs).forEach(dep => {
+        const path = context.rootDir + '/' + dep;
+        if(!acc.has(path)) {
+          acc.add(path);
+        }
       });
-    }
-  });
-  var trimmedFiles = files.filter(function (file) { return file && file.length > 0; });
-  context.moduleFiles = trimmedFiles;
+      return acc;
+    }, new Set());
+  context.moduleFiles = [...trimmedFiles];
+  
+  // clear any stale files from the build directory so it stays clean
+  new Promise(async(resolve) => {
+    const files = await fs.promises.readdir(context.buildDir);
+    Promise.all(
+      files
+        .filter(file => !stats.hasOwnProperty(`www/build/${file}`) && file !== 'main.css' && file !== 'polyfills.js')
+        .map(file => fs.promises.unlink(`${context.buildDir}/${file}`))
+    )
+      .then(resolve);
+  })
   return setBundledFiles(context);
 }
 function setBundledFiles(context) {
@@ -110,30 +108,14 @@ function setBundledFiles(context) {
   context.bundledFilePaths = bundledFilesToWrite.map(function (bundledFile) { return bundledFile.path; });
 }
 exports.setBundledFiles = setBundledFiles;
-function runWebpackFullBuild(config) {
+function runWebpackFullBuild(context, _config) {
   return new Promise(function (resolve, reject) {
-    var callback = function (err, stats) {
-      if (err) {
+    esbuild.build(withContext(context))
+      .then(result => resolve(result.metafile.outputs))
+      .catch(err => {
+        console.error(err);
         reject(new errors_1.BuildError(err));
-      }
-      else {
-        var info = stats.toJson();
-        if (stats.hasErrors()) {
-          console.error(info.errors);
-          reject(new errors_1.BuildError(info.errors));
-        }
-        else if (stats.hasWarnings()) {
-          logger_1.Logger.debug(info.warnings);
-          resolve(stats);
-        }
-        else {
-          resolve(stats);
-        }
-      }
-    };
-    var compiler = webpackApi(config);
-    comp = compiler;
-    compiler.run(callback);
+      });
   });
 }
 exports.runWebpackFullBuild = runWebpackFullBuild;
@@ -160,7 +142,7 @@ function runWebpackIncrementalBuild(initializeWatch, context, config) {
     if (initializeWatch) {
       startWebpackWatch(context, config);
     } else {
-      comp.run(incrementalCallback);
+      comp.rebuild();
     }
   });
   pendingPromises.push(promise);
@@ -181,7 +163,7 @@ function handleWebpackBuildSuccess(resolve, reject, stats, promise, pendingPromi
   // check if the promise if the last promise in the list of pending promises
   if (pendingPromises.length > 0 && pendingPromises[pendingPromises.length - 1] === promise) {
     logger_1.Logger.debug('handleWebpackBuildSuccess: Resolving with Webpack data');
-    console.log(stats.toString({ colors: true }));
+    // console.log(stats.toString({ colors: true }));
     resolve(stats);
     return;
   }
@@ -189,12 +171,63 @@ function handleWebpackBuildSuccess(resolve, reject, stats, promise, pendingPromi
   logger_1.Logger.debug('handleWebpackBuildSuccess: Rejecting with ignorable error');
   reject(new errors_1.IgnorableError());
 }
-function startWebpackWatch(context, config) {
+const getPlugin = context => ({
+  name: 'Build Plugin',
+  setup(build) {
+    // reroute to virtual files
+    build.onLoad({ filter: /.*/ }, file => {
+      if(!file.path.includes('/node_modules/')) {
+        let contents = context.fileCache
+          .get(file.path.replace('.ts', '.js'))
+          .content;
+
+        // if(file.path.includes('app.module.ts')) {
+        //   contents = contents.replace(/loadChildren: '([\w\._\/-]+)#([\w_-]+)', name: '([\w_-]+)'/g, (_, path, exportedModule, name) => `loadChildren: () => import('${path}').then(mod => mod.${exportedModule}), name: '${name}'`);
+        // }
+
+        return {
+          contents,
+          loader: 'js'
+        };
+      }
+    });
+
+    build.onEnd(
+      result => eventEmitter.emit(INCREMENTAL_BUILD_SUCCESS, result.metafile.outputs)
+    );
+  }
+});
+
+const withContext = context => ({
+  entryPoints: [context.rootDir + '/src/app/main.ts'],
+  outdir: context.wwwDir + '/build',
+  bundle: true,
+  splitting: true,
+  format: 'esm',
+  incremental: true,
+  plugins: [getPlugin(context)],
+  resolveExtensions: ['.ts', '.js'],
+  define: {
+    global: 'window'
+  },
+  logLevel: 'error',
+  metafile: true,
+  external: ['crypto'],
+  publicPath: '/build',
+  minify: true,
+  inject: [
+    require.resolve('@esbuild-plugins/node-globals-polyfill/buffer'),
+    require.resolve('@esbuild-plugins/node-globals-polyfill/process')
+  ]
+});
+
+async function startWebpackWatch(context) {
   logger_1.Logger.debug('Starting Webpack watch');
-  var compiler = webpackApi(config);
-  comp = compiler;
-  context.webpackWatch = compiler.run(incrementalCallback);
+
+  comp = await esbuild.build(withContext(context))
+    .catch(e => incrementalCallback(e));
 }
+
 function getWebpackConfig(context, configFile) {
   configFile = config_1.getUserConfigFile(context, taskInfo, configFile);
   var webpackConfigDictionary = config_1.fillConfigDefaults(configFile, taskInfo.defaultConfigFile);
