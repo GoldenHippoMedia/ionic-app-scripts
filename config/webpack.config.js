@@ -71,7 +71,7 @@ const common = {
   },
   optimization: {
     splitChunks: {
-      chunks: 'initial',
+      // chunks: 'initial',
       cacheGroups: {
         vendor: {
           name: 'vendor',
