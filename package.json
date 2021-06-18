@@ -58,7 +58,7 @@
     "tslint": "^5.8.0",
     "tslint-eslint-rules": "^4.1.1",
     "uglify-es": "3.3.9",
-    "webpack": "5.39.0",
+    "webpack": "5.39.1",
     "ws": "3.3.2",
     "xml2js": "^0.4.19"
   },
