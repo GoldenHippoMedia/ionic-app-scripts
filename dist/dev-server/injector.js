@@ -31,5 +31,5 @@ function getDevLoggerScript(rootDir, notifyOnConsoleLog, notificationPort) {
         appScriptsVersion: appScriptsVersion,
         systemInfo: helpers_1.getSystemText(rootDir)
     });
-    return "\n  " + LOGGER_HEADER + "\n  <script>var IonicDevServerConfig=" + ionDevServer + ";</script>\n  <link href=\"" + serve_config_1.LOGGER_DIR + "/ion-dev.css?v=" + appScriptsVersion + "\" rel=\"stylesheet\">\n  <script src=\"" + serve_config_1.LOGGER_DIR + "/ion-dev.js?v=" + appScriptsVersion + "\"></script>\n  ";
+    return "\n  " + LOGGER_HEADER + "\n  <script>var IonicDevServerConfig=" + ionDevServer + ";</script>\n  <link href=\"/" + serve_config_1.LOGGER_DIR + "/ion-dev.css?v=" + appScriptsVersion + "\" rel=\"stylesheet\">\n  <script src=\"" + serve_config_1.LOGGER_DIR + "/ion-dev.js?v=" + appScriptsVersion + "\"></script>\n  ";
 }
