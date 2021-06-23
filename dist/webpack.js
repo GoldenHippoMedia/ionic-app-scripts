@@ -13,7 +13,6 @@ var interfaces_1 = require("./util/interfaces");
 var eventEmitter = new events_1.EventEmitter();
 var INCREMENTAL_BUILD_FAILED = 'incremental_build_failed';
 var INCREMENTAL_BUILD_SUCCESS = 'incremental_build_success';
-let comp;
 /*
  * Due to how webpack watch works, sometimes we start an update event
  * but it doesn't affect the bundle at all, for example adding a new typescript file
@@ -159,8 +158,6 @@ function runWebpackIncrementalBuild(initializeWatch, context, config) {
     });
     if (initializeWatch) {
       startWebpackWatch(context, config);
-    } else {
-      comp.run(incrementalCallback);
     }
   });
   pendingPromises.push(promise);
@@ -191,9 +188,39 @@ function handleWebpackBuildSuccess(resolve, reject, stats, promise, pendingPromi
 }
 function startWebpackWatch(context, config) {
   logger_1.Logger.debug('Starting Webpack watch');
-  var compiler = webpackApi(config);
-  comp = compiler;
-  context.webpackWatch = compiler.run(incrementalCallback);
+
+  const html = fs.readFileSync(context.srcDir + '/index.html', 'utf8');
+  var compiler = webpackApi({
+    ...config,
+    plugins: [
+      ...config.plugins,
+      new HtmlWebpackPlugin({
+        templateContent: html
+          .replace(/.+build\/vendor.js.+\n/, '')
+          .replace(/.+build\/main.js.+\n/, ''),
+        inject: 'body'
+      })
+    ]
+  });
+
+  const devServer = new WebpackDevServer(compiler, {
+    publicPath: '/',
+    historyApiFallback: true,
+    watchContentBase: true,
+    contentBase: [context.buildDir, context.wwwDir],
+    contentBasePublicPath: ['/build', '/'],
+    hot: true,
+    open: true,
+    proxy: {
+      '/request-ip': 'http://localhost:8200'
+    }
+  });
+  devServer.listen(9000);
+
+  compiler.hooks.done.tapAsync('My Plugin', (stats, next) => {
+    incrementalCallback(null, stats);
+    next();
+  });
 }
 function getWebpackConfig(context, configFile) {
   configFile = config_1.getUserConfigFile(context, taskInfo, configFile);
