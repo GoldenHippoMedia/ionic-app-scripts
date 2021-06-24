@@ -13,6 +13,9 @@ var interfaces_1 = require("./util/interfaces");
 var eventEmitter = new events_1.EventEmitter();
 var INCREMENTAL_BUILD_FAILED = 'incremental_build_failed';
 var INCREMENTAL_BUILD_SUCCESS = 'incremental_build_success';
+const fs = require('fs');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const WebpackDevServer = require('webpack-dev-server');
 /*
  * Due to how webpack watch works, sometimes we start an update event
  * but it doesn't affect the bundle at all, for example adding a new typescript file
