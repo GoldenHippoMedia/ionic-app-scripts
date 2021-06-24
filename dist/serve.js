@@ -61,7 +61,7 @@ function serve(context) {
         return watch_1.watch(context);
     })
         .then(function () {
-        // finish();
+        finish();
         return config;
     }, function (err) {
         throw err;
