@@ -210,22 +210,20 @@ function startWebpackWatch(context, config) {
   });
 
   const devServer = new WebpackDevServer(compiler, {
-    publicPath: '/',
-    historyApiFallback: true,
-    watchContentBase: true,
     contentBase: [context.buildDir, context.wwwDir],
     contentBasePublicPath: ['/build', '/'],
-    hot: true,
+    historyApiFallback: true,
     open: true,
-    proxy: {
-      '/request-ip': 'http://localhost:8200'
-    }
+    publicPath: '/',
+    serveIndex: false,
+    stats: 'none',
+    watchContentBase: true,
   });
-  devServer.listen(9000);
+  devServer.listen(context.port);
 
-  compiler.hooks.done.tapAsync('My Plugin', (stats, next) => {
+  compiler.hooks.done.tapAsync('IonicAngularServe', (stats, cb) => {
     incrementalCallback(null, stats);
-    next();
+    cb();
   });
 }
 function getWebpackConfig(context, configFile) {
