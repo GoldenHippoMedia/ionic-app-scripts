@@ -189,11 +189,17 @@ function handleWebpackBuildSuccess(resolve, reject, stats, promise, pendingPromi
 function startWebpackWatch(context, config) {
   logger_1.Logger.debug('Starting Webpack watch');
 
+  const devConfig = {
+    ...config
+  };
+
+  devConfig.output.publicPath = '/';
+
   const html = fs.readFileSync(context.srcDir + '/index.html', 'utf8');
   var compiler = webpackApi({
-    ...config,
+    ...devConfig,
     plugins: [
-      ...config.plugins,
+      ...devConfig.plugins,
       new HtmlWebpackPlugin({
         templateContent: html
           .replace(/.+build\/vendor.js.+\n/, '')
