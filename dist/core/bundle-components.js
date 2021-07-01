@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var logger_1 = require("../logger/logger");
 var fs = require("fs");
 var path = require("path");
-var nodeSass = require("node-sass");
+var nodeSass = require("sass");
 var rollup = require("rollup");
 var typescript = require("typescript");
 var uglify = require("uglify-es");

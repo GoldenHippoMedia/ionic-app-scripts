@@ -9,7 +9,7 @@ var config_1 = require("./util/config");
 var logger_1 = require("./logger/logger");
 var logger_sass_1 = require("./logger/logger-sass");
 var logger_diagnostics_1 = require("./logger/logger-diagnostics");
-var node_sass_1 = require("node-sass");
+var node_sass_1 = require("sass");
 var postcss = require("postcss");
 var autoprefixer = require("autoprefixer");
 function sass(context, configFile) {
