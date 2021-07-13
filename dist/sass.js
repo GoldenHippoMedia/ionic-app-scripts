@@ -197,28 +197,27 @@ function getComponentDirectories(moduleDirectories, sassConfig) {
     });
 }
 function render(context, sassConfig) {
-    return new Promise(function (resolve, reject) {
-        sassConfig.omitSourceMapUrl = false;
-        if (sassConfig.sourceMap) {
-            sassConfig.sourceMapContents = true;
+  return new Promise(function (resolve, reject) {
+    sassConfig.omitSourceMapUrl = false;
+    if (sassConfig.sourceMap) {
+        sassConfig.sourceMapContents = true;
+    }
+    try {
+      const sassResult = node_sass_1.renderSync(sassConfig);
+      renderSassSuccess(context, sassResult, sassConfig).then(function (outFile) {
+        resolve(outFile);
+      }).catch(function (err) {
+          reject(new errors_1.BuildError(err));
+      });
+    } catch(sassError) {
+      var diagnostics = logger_sass_1.runSassDiagnostics(context, sassError);
+        if (diagnostics.length) {
+            logger_diagnostics_1.printDiagnostics(context, logger_diagnostics_1.DiagnosticsType.Sass, diagnostics, true, true);
+            // sass render error :(
+            reject(new errors_1.BuildError('Failed to render sass to css'));
         }
-        node_sass_1.render(sassConfig, function (sassError, sassResult) {
-            var diagnostics = logger_sass_1.runSassDiagnostics(context, sassError);
-            if (diagnostics.length) {
-                logger_diagnostics_1.printDiagnostics(context, logger_diagnostics_1.DiagnosticsType.Sass, diagnostics, true, true);
-                // sass render error :(
-                reject(new errors_1.BuildError('Failed to render sass to css'));
-            }
-            else {
-                // sass render success :)
-                renderSassSuccess(context, sassResult, sassConfig).then(function (outFile) {
-                    resolve(outFile);
-                }).catch(function (err) {
-                    reject(new errors_1.BuildError(err));
-                });
-            }
-        });
-    });
+    }
+  });
 }
 function renderSassSuccess(context, sassResult, sassConfig) {
     if (sassConfig.autoprefixer) {
