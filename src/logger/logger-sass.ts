@@ -2,7 +2,7 @@ import { BuildContext, Diagnostic, PrintLine } from '../util/interfaces';
 import { highlight } from '../highlight/highlight';
 import { Logger } from './logger';
 import { readFileSync } from 'fs';
-import { SassError } from 'node-sass';
+import { SassError } from 'sass';
 import { splitLineBreaks } from '../util/helpers';
 
 
