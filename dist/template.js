@@ -16,9 +16,7 @@ function templateUpdate(changedFiles, context) {
         for (var _i = 0, changedTemplates_1 = changedTemplates; _i < changedTemplates_1.length; _i++) {
             var changedTemplateFile = changedTemplates_1[_i];
             var file = context.fileCache.get(changedTemplateFile.filePath);
-            if (!updateCorrespondingJsFile(context, file.content, changedTemplateFile.filePath)) {
-                throw new Error("Failed to inline template " + changedTemplateFile.filePath);
-            }
+            updateCorrespondingJsFile(context, file.content, changedTemplateFile.filePath);
             // find the corresponding bundles
             for (var _a = 0, bundleFiles_1 = bundleFiles; _a < bundleFiles_1.length; _a++) {
                 var bundleFile = bundleFiles_1[_a];
