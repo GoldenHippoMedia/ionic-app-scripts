@@ -45,6 +45,7 @@
     "express": "^4.16.3",
     "fs-extra": "^4.0.2",
     "glob": "^7.1.2",
+    "node-polyfill-webpack-plugin": "^1.1.4",
     "os-name": "^2.0.1",
     "postcss": "^6.0.21",
     "proxy-middleware": "^0.15.0",
