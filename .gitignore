@@ -45,7 +45,7 @@ jspm_packages
 .vscode
 *.sw[mnpcod]
 
-bin/ion-dev.css
+# bin/ion-dev.css
 
 # WebStorm
 .idea

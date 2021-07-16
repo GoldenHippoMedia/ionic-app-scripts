@@ -5,7 +5,6 @@ var Constants = require("../util/constants");
 var helpers_1 = require("../util/helpers");
 var logger_1 = require("../logger/logger");
 var hybrid_file_system_factory_1 = require("../util/hybrid-file-system-factory");
-var watch_memory_system_1 = require("./watch-memory-system");
 var ContextElementDependency = require('webpack/lib/dependencies/ContextElementDependency');
 var IonicEnvironmentPlugin = (function () {
     function IonicEnvironmentPlugin(context, writeToDisk) {
@@ -51,7 +50,6 @@ var IonicEnvironmentPlugin = (function () {
             hybridFileSystem.setOutputFileSystem(compiler.outputFileSystem);
             compiler.inputFileSystem = hybridFileSystem;
             compiler.outputFileSystem = hybridFileSystem;
-            compiler.watchFileSystem = new watch_memory_system_1.WatchMemorySystem(_this.context.fileCache, _this.context.srcDir);
             // do a bunch of webpack specific stuff here, so cast to an any
             // populate the content of the file system with any virtual files
             // inspired by populateWebpackResolver method in Angular's webpack plugin
