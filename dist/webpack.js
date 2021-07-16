@@ -208,7 +208,8 @@ const withContext = context => ({
   plugins: [getPlugin(context)],
   resolveExtensions: ['.ts', '.js'],
   define: {
-    global: 'window'
+    global: 'window',
+    this: 'globalThis'
   },
   logLevel: 'error',
   metafile: true,
