@@ -128,6 +128,11 @@ function serveIndex(req, res) {
             main.type = 'module';
             document.getElementsByTagName('head')[0].appendChild(main);`
           )
+          .replace('<script defer src="/build/vendor.js?ver=VERSIONSTRING"></script>', '')
+          .replace(
+            '<script defer src="/build/main.js?ver=VERSIONSTRING"></script>',
+            '<script defer type="module" src="/build/main.js?ver=VERSIONSTRING"></script>'
+          )
         );
     });
 }
