@@ -120,7 +120,15 @@ function serveIndex(req, res) {
         }
         indexHtml = logger_diagnostics_1.injectDiagnosticsHtml(config.buildDir, indexHtml);
         res.set('Content-Type', 'text/html');
-        res.send(indexHtml);
+        res.send(indexHtml
+          .replace(
+            'loadboth();',
+            `var main = document.createElement('script');
+            main.src = "/build/main.js?ver=VERSIONSTRING";
+            main.type = 'module';
+            document.getElementsByTagName('head')[0].appendChild(main);`
+          )
+        );
     });
 }
 /**

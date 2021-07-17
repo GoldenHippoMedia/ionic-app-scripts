@@ -4,7 +4,6 @@ const fs = require('fs');
 Object.defineProperty(exports, "__esModule", { value: true });
 var events_1 = require("events");
 var path_1 = require("path");
-var webpackApi = require("webpack");
 var logger_1 = require("./logger/logger");
 var config_1 = require("./util/config");
 var errors_1 = require("./util/errors");
@@ -204,7 +203,7 @@ const withContext = context => ({
   bundle: true,
   splitting: true,
   format: 'esm',
-  incremental: true,
+  incremental: !context.isProd,
   plugins: [getPlugin(context)],
   resolveExtensions: ['.ts', '.js'],
   define: {
@@ -215,7 +214,7 @@ const withContext = context => ({
   metafile: true,
   external: ['crypto'],
   publicPath: '/build',
-  minify: true,
+  minify: context.isProd,
   inject: [
     require.resolve('@esbuild-plugins/node-globals-polyfill/buffer'),
     require.resolve('@esbuild-plugins/node-globals-polyfill/process')
