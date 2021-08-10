@@ -30,20 +30,20 @@ var IonicEnvironmentPlugin = (function () {
                 result.recursive = true;
                 result.dependencies.forEach(function (dependency) { return dependency.critical = false; });
                 result.resolveDependencies = function (_p1, _p2, cb) {
-                    var dependencies = Object.keys(webpackDeepLinkModuleDictionary)
-                        .map(function (key) {
-                        var value = webpackDeepLinkModuleDictionary[key];
-                        if (value) {
-                            return new ContextElementDependency(value, key);
-                        }
-                        return null;
-                    }).filter(function (dependency) { return !!dependency; });
-                    cb(null, dependencies);
+                  const dependencies = Object.keys(webpackDeepLinkModuleDictionary)
+                    .reduce((acc, key) => {
+                      const value = webpackDeepLinkModuleDictionary[key];
+                      if(value) {
+                        acc.push(new ContextElementDependency(value, key));
+                      }
+                      return acc;
+                    }, []);
+                  cb(null, dependencies);
                 };
                 return callback(null, result);
             });
         });
-        compiler.hooks.environment.tap(name, function (otherCompiler, callback) {
+        compiler.hooks.environment.tap(name, () => {
             logger_1.Logger.debug('[IonicEnvironmentPlugin] apply: creating environment plugin');
             var hybridFileSystem = hybrid_file_system_factory_1.getInstance(_this.writeToDisk);
             hybridFileSystem.setInputFileSystem(compiler.inputFileSystem);
