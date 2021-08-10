@@ -75,7 +75,8 @@ const common = {
       cacheGroups: {
         vendor: {
           name: 'vendor',
-          test: /[\\/]node_modules[\\/]/
+          test: /[\\/]node_modules[\\/]/,
+          chunks: 'all'
         }
       }
     }
