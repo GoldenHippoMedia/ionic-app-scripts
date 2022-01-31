@@ -14,11 +14,13 @@ const Dotenv = require('dotenv-webpack');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 
 const { PurifyPlugin } = require('@angular-devkit/build-optimizer');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const optimizedProdLoaders = [
   {
     test: /\.js$/,
     use: [
+      require.resolve('../dist/webpack/style-loader.js'),
       {
         loader: process.env.IONIC_CACHE_LOADER
       },
@@ -47,6 +49,33 @@ const optimizedProdLoaders = [
 
       {
         loader: process.env.IONIC_WEBPACK_LOADER
+      }
+    ]
+  },
+  {
+    test: /\.scss$/,
+    use: [
+      MiniCssExtractPlugin.loader,
+      {
+        loader: 'css-loader',
+        options: {
+          url: false
+        }
+      },
+      {
+        loader: 'sass-loader',
+        options: {
+          sassOptions: {
+            includePaths: [
+              'node_modules/ionic-angular/themes',
+              'node_modules/ionicons/dist/scss',
+              'node_modules/ionic-angular/fonts',
+              'src/theme'
+            ],
+            sourceMapContents: false
+          },
+          sourceMap: true
+        }
       }
     ]
   }
@@ -106,7 +135,37 @@ const devConfig = {
     rules: [
       {
         test: /\.ts$/,
-        loader: process.env.IONIC_WEBPACK_LOADER
+        use: [
+          require.resolve('../dist/webpack/style-loader.js'),
+          process.env.IONIC_WEBPACK_LOADER
+        ]
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              url: false
+            }
+          },
+          {
+            loader: 'sass-loader',
+            options: {
+              sassOptions: {
+                includePaths: [
+                  'node_modules/ionic-angular/themes',
+                  'node_modules/ionicons/dist/scss',
+                  'node_modules/ionic-angular/fonts',
+                  'src/theme'
+                ],
+                sourceMapContents: false
+              },
+              sourceMap: true
+            }
+          }
+        ]
       }
     ]
   },
@@ -138,7 +197,8 @@ const prodConfig = {
     }),
     new NodePolyfillPlugin(),
     ionicWebpackFactory.getIonicEnvironmentPlugin(),
-    new PurifyPlugin()
+    new PurifyPlugin(),
+    new MiniCssExtractPlugin()
   ]
 };
 
