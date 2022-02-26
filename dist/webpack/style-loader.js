@@ -1,6 +1,6 @@
 module.exports = src => {
   const styleUrls = src
-    .match(/styleUrls: \[(?<styleUrls>[\w\/\.\n '",\t-_]+)\]/)
+    .match(/styleUrls: \[(?<styleUrls>[^\]]+)\]/)
     ?.groups.styleUrls ?? null;
 
   if(!styleUrls) return src;
