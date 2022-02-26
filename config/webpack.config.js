@@ -165,13 +165,15 @@ const devConfig = {
               sourceMap: true
             }
           },
-          {
-            loader: 'sass-resources-loader',
-            resources: [
-              './src/theme/_base-styles/mixins.scss',
-              './src/theme/_brand-styles/colors.scss'
-            ]
-          }
+          // {
+          //   loader: 'sass-resources-loader',
+          //   options: {
+          //     resources: [
+          //       'src/theme/_base-styles/mixins.scss',
+          //       'src/theme/_brand-styles/colors.scss'
+          //     ]
+          //   }
+          // }
         ]
       }
     ]
