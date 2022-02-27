@@ -284,7 +284,8 @@ function runBuildUpdate(context, changedFiles) {
     if (sassFilesNotChanges.length) {
         // .ts file was either added or deleted, so we'll have to
         // run sass again to add/remove that .ts file's potential .scss file
-        context.sassState = interfaces_1.BuildState.RequiresUpdate;
+        context.transpileState = interfaces_1.BuildState.RequiresUpdate;
+        context.deepLinkState = interfaces_1.BuildState.RequiresUpdate;
     }
     var htmlFiles = changedFiles.filter(function (f) { return f.ext === '.html'; });
     if (htmlFiles.length) {

@@ -117,13 +117,8 @@ function buildProject(context) {
     })
         .then(function () {
         var minPromise = (context.runMinifyJs) ? minify_1.minifyJs(context) : Promise.resolve();
-        var sassPromise = sass_1.sass(context)
-            .then(function () {
-            return (context.runMinifyCss) ? minify_1.minifyCss(context) : Promise.resolve();
-        });
         return Promise.all([
             minPromise,
-            sassPromise,
             copyPromise
         ]);
     })
