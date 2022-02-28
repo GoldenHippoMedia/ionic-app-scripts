@@ -6,7 +6,7 @@ module.exports = src => {
 
   const split = match.groups.styleUrls.split(',');
 
-  return split.map(path => 'import ' + path.trim() + ';')
+  return split.map(path => `import ${path.trim()};`)
     .join('\n')
     + '\n' + src;
 }
