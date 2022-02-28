@@ -16,6 +16,38 @@ const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 const { PurifyPlugin } = require('@angular-devkit/build-optimizer');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
+const isProd = process.env.NODE_ENV === 'production';
+
+const scssRule = {
+  test: /\.scss$/,
+  use: [
+    isProd
+      ? MiniCssExtractPlugin.loader
+      : 'style-loader',
+    {
+      loader: 'css-loader',
+      options: {
+        url: false
+      }
+    },
+    {
+      loader: 'sass-loader',
+      options: {
+        sassOptions: {
+          includePaths: [
+            'node_modules/ionic-angular/themes',
+            'node_modules/ionicons/dist/scss',
+            'node_modules/ionic-angular/fonts',
+            'src/theme'
+          ],
+          sourceMapContents: false
+        },
+        sourceMap: true
+      }
+    }
+  ]
+}
+
 const optimizedProdLoaders = [
   {
     test: /\.js$/,
@@ -52,33 +84,7 @@ const optimizedProdLoaders = [
       }
     ]
   },
-  {
-    test: /\.scss$/,
-    use: [
-      MiniCssExtractPlugin.loader,
-      {
-        loader: 'css-loader',
-        options: {
-          url: false
-        }
-      },
-      {
-        loader: 'sass-loader',
-        options: {
-          sassOptions: {
-            includePaths: [
-              'node_modules/ionic-angular/themes',
-              'node_modules/ionicons/dist/scss',
-              'node_modules/ionic-angular/fonts',
-              'src/theme'
-            ],
-            sourceMapContents: false
-          },
-          sourceMap: true
-        }
-      }
-    ]
-  }
+  scssRule
 ];
 
 function getProdLoaders() {
@@ -92,6 +98,7 @@ const common = {
   target: 'web',
   devtool: process.env.IONIC_SOURCE_MAP_TYPE,
   entry: process.env.IONIC_APP_ENTRY_POINT,
+  mode: process.env.NODE_ENV || 'development',
   output: {
     path: '{{BUILD}}',
     publicPath: 'build/',
@@ -121,7 +128,6 @@ const common = {
 
 const devConfig = {
   ...common,
-  mode: 'development',
 
   // keeps Webpack's cache from reflecting stale files
   snapshot: {
@@ -140,42 +146,7 @@ const devConfig = {
           process.env.IONIC_WEBPACK_LOADER
         ]
       },
-      {
-        test: /\.scss$/,
-        use: [
-          'style-loader',
-          {
-            loader: 'css-loader',
-            options: {
-              url: false
-            }
-          },
-          {
-            loader: 'sass-loader',
-            options: {
-              sassOptions: {
-                includePaths: [
-                  'node_modules/ionic-angular/themes',
-                  'node_modules/ionicons/dist/scss',
-                  'node_modules/ionic-angular/fonts',
-                  'src/theme'
-                ],
-                sourceMapContents: false
-              },
-              sourceMap: true
-            }
-          },
-          // {
-          //   loader: 'sass-resources-loader',
-          //   options: {
-          //     resources: [
-          //       'src/theme/_base-styles/mixins.scss',
-          //       'src/theme/_brand-styles/colors.scss'
-          //     ]
-          //   }
-          // }
-        ]
-      }
+      scssRule
     ]
   },
 
@@ -186,13 +157,14 @@ const devConfig = {
       silent: true // hide any errors
     }),
     new NodePolyfillPlugin(),
-    ionicWebpackFactory.getIonicEnvironmentPlugin()
+    ionicWebpackFactory.getIonicEnvironmentPlugin(),
+    isProd && new MiniCssExtractPlugin()
   ]
+    .filter(Boolean)
 };
 
 const prodConfig = {
   ...common,
-  mode: 'production',
 
   module: {
     rules: getProdLoaders()
