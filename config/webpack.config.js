@@ -99,7 +99,7 @@ const common = {
   target: 'web',
   devtool: process.env.IONIC_SOURCE_MAP_TYPE,
   entry: process.env.IONIC_APP_ENTRY_POINT,
-  mode: process.env.NODE_ENV || 'development',
+
   output: {
     path: '{{BUILD}}',
     publicPath: 'build/',
@@ -133,6 +133,7 @@ const common = {
 
 const devConfig = {
   ...common,
+  mode: 'development',
 
   // keeps Webpack's cache from reflecting stale files
   snapshot: {
@@ -173,6 +174,7 @@ const devConfig = {
 
 const prodConfig = {
   ...common,
+  mode: 'production',
 
   module: {
     rules: getProdLoaders()
