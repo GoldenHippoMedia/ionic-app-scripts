@@ -15,13 +15,14 @@ const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 
 const { PurifyPlugin } = require('@angular-devkit/build-optimizer');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
-const isProd = process.env.NODE_ENV === 'production';
+const extractCss = process.env.EXTRACT_CSS === 'true';
 
 const scssRule = {
   test: /\.scss$/,
   use: [
-    isProd
+    extractCss
       ? MiniCssExtractPlugin.loader
       : 'style-loader',
     {
@@ -98,6 +99,7 @@ const common = {
   target: 'web',
   devtool: process.env.IONIC_SOURCE_MAP_TYPE,
   entry: process.env.IONIC_APP_ENTRY_POINT,
+  mode: process.env.NODE_ENV || 'development',
   output: {
     path: '{{BUILD}}',
     publicPath: 'build/',
@@ -114,7 +116,11 @@ const common = {
           chunks: 'all'
         }
       }
-    }
+    },
+    minimizer: extractCss
+      ? [new CssMinimizerPlugin()]
+      : [],
+    minimize: extractCss
   },
   resolve: {
     extensions: ['.ts', '.js', '.json'],
@@ -127,7 +133,6 @@ const common = {
 
 const devConfig = {
   ...common,
-  mode: 'development',
 
   // keeps Webpack's cache from reflecting stale files
   snapshot: {
@@ -158,7 +163,7 @@ const devConfig = {
     }),
     new NodePolyfillPlugin(),
     ionicWebpackFactory.getIonicEnvironmentPlugin(),
-    isProd && new MiniCssExtractPlugin({
+    extractCss && new MiniCssExtractPlugin({
       filename: "[name].[contenthash].css",
       chunkFilename: "[id].[contenthash].css",
     })
@@ -168,7 +173,6 @@ const devConfig = {
 
 const prodConfig = {
   ...common,
-  mode: 'production',
 
   module: {
     rules: getProdLoaders()
@@ -183,7 +187,10 @@ const prodConfig = {
     new NodePolyfillPlugin(),
     ionicWebpackFactory.getIonicEnvironmentPlugin(),
     new PurifyPlugin(),
-    new MiniCssExtractPlugin()
+    new MiniCssExtractPlugin({
+      filename: "[name].[contenthash].css",
+      chunkFilename: "[id].[contenthash].css",
+    })
   ]
 };
 
