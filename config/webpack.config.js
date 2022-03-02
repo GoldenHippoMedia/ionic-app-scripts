@@ -165,8 +165,7 @@ const devConfig = {
     new NodePolyfillPlugin(),
     ionicWebpackFactory.getIonicEnvironmentPlugin(),
     extractCss && new MiniCssExtractPlugin({
-      filename: "[name].[contenthash].css",
-      chunkFilename: "[id].[contenthash].css",
+      chunkFilename: '[id].[contenthash].css',
     })
   ]
     .filter(Boolean)
@@ -190,8 +189,7 @@ const prodConfig = {
     ionicWebpackFactory.getIonicEnvironmentPlugin(),
     new PurifyPlugin(),
     new MiniCssExtractPlugin({
-      filename: "[name].[contenthash].css",
-      chunkFilename: "[id].[contenthash].css",
+      chunkFilename: '[id].[contenthash].css',
     })
   ]
 };
