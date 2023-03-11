@@ -35,6 +35,8 @@
     "autoprefixer": "^7.2.6",
     "chalk": "^2.4.0",
     "chokidar": "3.5.3",
+    "immutable": "4.3.0",
+    "source-map-js": "1.0.2",
     "clean-css": "^4.1.11",
     "cross-spawn": "^5.1.0",
     "dotenv-webpack": "^7.0.3",
